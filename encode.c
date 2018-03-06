@@ -1,26 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "wav.h"
+
 int rtfm(char exe[], int result) {
 	printf("Usage: %s infile\nOutputs a .wav file including the source file.\n",exe);
 	return result;
 }
 
-void convert_file_to_song(char infile[]) {
-	char * outfile = strcat(infile,".wav");
+void convert_file_to_song(char infile[]) 
+{
+	char outfile[256];
+	sprintf(outfile,"%s.wav",infile);
+
 	FILE * fi = fopen(infile,"rb");
 	FILE * fo = fopen(outfile,"wb");
+
 	size_t in_size;
+	struct stat stbuf;
+	
 	int wav_size;
 	int sample_amount;
 	short num_channels;
 	char byte;
 	size_t c;
-	printf("Size before seek end: %zu\n",ftell(fi));
-	fseek(fi,0L,SEEK_END);
-	in_size = ftello(fi);
-	printf("Size after seek end: %zu\n",in_size);
+	
+	fstat(fileno(fi), &stbuf);
+	in_size = stbuf.st_size;
+	
+	printf("infile size: %zu\n",in_size);
 	wav_size = sizeof(struct wav_header)+in_size;
 	sample_amount = in_size;
 	fseek(fi,0L,SEEK_SET);
